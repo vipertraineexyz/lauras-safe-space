@@ -1,300 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laura's safe space</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        /* --- 1. General & Background Styles --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laura's safe space</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* --- 1. General & Background Styles --- */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #797577, #e0c8dd, #c8b9da);
+    color: #333;
+    overflow: hidden;
+}
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #797577, #e0c8dd, #c8b9da); /* Slightly darker gradient */
-            color: #333;
-            overflow: hidden; /* Hide scrollbars during loading */
-        }
+/* --- 2. Loading Screen Styles --- */
+#loading-screen {
+    position: fixed; top:0; left:0; width:100vw; height:100vh;
+    background-color: #000;
+    display:flex; justify-content:center; align-items:center;
+    z-index:9999; opacity:1; transition: opacity 1s ease;
+}
+#loading-screen .loading-text {
+    color: white; font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; opacity:0;
+}
+@keyframes fadeIn { to { opacity:1; } }
+@keyframes fadeOut { to { opacity:0; } }
 
-        /* --- 2. Loading Screen Styles --- */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 1s ease; /* Faster fade out for smoother feel */
-        }
+/* --- 3. Section Titles --- */
+h1.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    text-align: center;
+    margin: 40px 0 20px 0;
+    color: #4a4a68;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
 
-        #loading-screen .loading-text {
-            color: white;
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            opacity: 0;
-        }
+/* --- 4. Container Styles --- */
+.cards-section {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    margin-bottom:60px;
+    opacity:0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
 
-        /* --- Animation Keyframes --- */
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
+/* --- 5. Card Styles --- */
+.card {
+    background: rgba(255,255,255,0.8);
+    border-radius:15px;
+    box-shadow:0 4px 16px rgba(100,100,135,0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border:1px solid rgba(255,255,255,0.25);
+    width:280px; padding:25px;
+    cursor:pointer; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+.card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size:1.8rem;
+    color:#4a4a68;
+}
+.card:hover { transform: translateY(-5px) scale(1.02); box-shadow:0 8px 20px rgba(100,100,135,0.25); }
 
-        @keyframes fadeOut {
-            to { opacity: 0; }
-        }
+/* --- Smooth Click Animation --- */
+.card.click-fade {
+    opacity:0;
+    transform: scale(0.95);
+}
 
-        @keyframes cardClick {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
-        }
-
-        /* --- 3. Main App Container --- */
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            flex-wrap: wrap;
-            padding: 40px;
-            gap: 40px;
-            opacity: 0; /* Initially hidden */
-            transition: opacity 0.8s ease 0.8s; /* Smoother fade in after loading */
-        }
-
-        body.loaded .container {
-            opacity: 1;
-        }
-        body.loaded {
-            overflow: auto; /* Restore scrollbars after loading */
-        }
-
-        /* --- 4. Card Styles --- */
-        .card {
-            background: rgba(255, 255, 255, 0.8); /* Slightly less transparent */
-            border-radius: 15px;
-            box-shadow: 0 4px 16px 0 rgba(100, 100, 135, 0.15); /* Subtle shadow */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.25); /* Slightly stronger border */
-            width: 300px;
-            padding: 30px; /* More padding for better structure */
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-        
-        .card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem; /* More prominent title */
-            color: #4a4a68;
-        }
-
-        .card:hover {
-            transform: translateY(-5px) scale(1.02); /* Less intense hover */
-            box-shadow: 0 8px 20px 0 rgba(100, 100, 135, 0.25); /* More noticeable hover shadow */
-        }
-
-        .card.clicked {
-            animation: cardClick 0.3s ease-in-out;
-        }
-
-        /* --- 5. Modal Styles --- */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            transform: scale(0.95); /* Slightly less initial scale */
-            transition: transform 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-content p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            white-space: pre-wrap; /* Preserves line breaks in your text */
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            color: #aaa;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-    </style>
+/* --- 6. Modal Styles --- */
+.modal {
+    position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%;
+    background-color: rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s ease;
+}
+.modal.show { display:flex; opacity:1; }
+.modal-content {
+    background:#fff; padding:40px; border-radius:15px;
+    max-width:600px; width:90%; max-height:80vh; overflow-y:auto;
+    position:relative; transform:scale(0.95); transition:transform 0.3s ease;
+}
+.modal.show .modal-content { transform:scale(1); }
+.modal-content p { font-size:1.1rem; line-height:1.8; white-space:pre-wrap; }
+.close-btn { position:absolute; top:15px; right:20px; color:#aaa; font-size:30px; font-weight:bold; cursor:pointer; transition:color 0.2s ease; }
+.close-btn:hover { color:#333; }
+</style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="loading-text">Your safe space</div>
+<div id="loading-screen">
+    <div class="loading-text">Your safe space</div>
+</div>
+
+<h1 class="section-title" id="feels-title">Feels</h1>
+<div class="cards-section" id="feels-section">
+    <div class="card" data-key="sad"><h2>Read when you're sad</h2></div>
+    <div class="card" data-key="miss-me"><h2>Read when you miss me</h2></div>
+    <div class="card" data-key="happy"><h2>Read when you're happy</h2></div>
+    <div class="card" data-key="doubt"><h2>Read when you doubt yourself</h2></div>
+    <div class="card" data-key="depressed"><h2>Read when you're feeling depressed</h2></div>
+    <div class="card" data-key="crying"><h2>Read when you're crying</h2></div>
+    <div class="card" data-key="insecure"><h2>Read when you're feeling insecure</h2></div>
+    <div class="card" data-key="lonely"><h2>Read when you're feeling lonely</h2></div>
+    <div class="card" data-key="horny"><h2>Read when you're feeling horny</h2></div>
+    <div class="card" data-key="mad"><h2>Read when you're feeling mad</h2></div>
+    <div class="card" data-key="stressed"><h2>Read when you're feeling stressed</h2></div>
+</div>
+
+<h1 class="section-title" id="needs-title">Needs</h1>
+<div class="cards-section" id="needs-section">
+    <div class="card" data-key="need-reassurance"><h2>Read when you need reassurance</h2></div>
+    <div class="card" data-key="need-motivation"><h2>Read when you need motivation</h2></div>
+    <div class="card" data-key="need-laugh"><h2>Read when you need laughter</h2></div>
+    <div class="card" data-key="need-sleep"><h2>Read when you need to sleep</h2></div>
+    <div class="card" data-key="need-cum"><h2>Read when you need to cum</h2></div>
+    <div class="card" data-key="need-hug"><h2>Read when you need a hug</h2></div>
+    <div class="card" data-key="need-smile"><h2>Read when you need a smile</h2></div>
+    <div class="card" data-key="need-encouragement"><h2>Read when you need encouragement</h2></div>
+</div>
+
+<div id="message-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <p id="modal-text"></p>
     </div>
+</div>
 
-    <div class="container">
-        <div class="card" data-key="sad">
-            <h2>Read when you're sad</h2>
-        </div>
-        <div class="card" data-key="miss-me">
-            <h2>Read when you miss me</h2>
-        </div>
-        <div class="card" data-key="happy">
-            <h2>Read when you're happy</h2>
-        </div>
-        <div class="card" data-key="doubt">
-            <h2>Read when you doubt yourself</h2>
-        </div>
-    </div>
+<script>
+const messages = {
+    'sad': "Hey 💀 Feeling sad? Remember it's okay to feel. Take a deep breath and let it out.",
+    'miss-me': "Are you missing me 💀? I miss you too. Let's talk soon.",
+    'happy': "Yay 💀! Happiness suits you. Keep smiling!",
+    'doubt': "Don't listen to that little voice 💀. You are stronger than you think.",
+    'depressed': "It's okay 💀. Take it one small step at a time, I'm here with you.",
+    'crying': "Let it out 💀. Tears are just emotions leaving your body.",
+    'insecure': "You are amazing 💀. Remember your worth and embrace yourself.",
+    'lonely': "You are not alone 💀. Even when alone, you are loved.",
+    'horny': "Time to take care of yourself 💀... responsibly 😉",
+    'mad': "Take a breath 💀. Let the anger out safely, then reset.",
+    'stressed': "Relax 💀. One step at a time, you’ve got this.",
+    'need-reassurance': "You are enough 💀. I believe in you.",
+    'need-motivation': "Keep going 💀. You are unstoppable.",
+    'need-laugh': "Here’s a laugh for you 💀: Why did the skeleton go to the party alone? Because he had no body to go with!",
+    'need-sleep': "Rest 💀. Sleep is your superpower, recharge yourself.",
+    'need-cum': "Take a moment 💀. Pleasure is normal, just be mindful.",
+    'need-hug': "Virtual hug 💀 🤗 Sending warmth your way.",
+    'need-smile': "Smile 💀! It's contagious, even if just in your mind.",
+    'need-encouragement': "You can do it 💀. Every small step counts."
+};
 
-    <div id="message-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <p id="modal-text"></p>
-        </div>
-    </div>
+document.addEventListener('DOMContentLoaded', () => {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingText = document.querySelector('.loading-text');
+    const cards = document.querySelectorAll('.card');
+    const modal = document.getElementById('message-modal');
+    const modalText = document.getElementById('modal-text');
+    const closeModal = document.querySelector('.close-btn');
+    const feelsTitle = document.getElementById('feels-title');
+    const needsTitle = document.getElementById('needs-title');
+    const feelsSection = document.getElementById('feels-section');
+    const needsSection = document.getElementById('needs-section');
 
-    <script>
-        // --- All your messages go here! ---
-        // Match the key (e.g., 'sad') to the `data-key` in your HTML card.
-        // You can use `\n` to create new lines in your message.
-        const messages = {
-            'sad': `Hey my love,
-            
-            I know things feel heavy right now, but I need you to remember how incredibly strong you are. This feeling is temporary, like a passing cloud.
-            
-            Close your eyes, take a deep breath, and think about us. Think about all the joy we share. I'm here for you, always. I love you more than words can say.`,
-            
-            'miss-me': `Are you missing me? I hope so, because I'm missing you like crazy.
-            
-            Just picture my goofy smile right now. Picture me wrapping you up in the biggest hug. I'm sending all my love to you across any distance. I can't wait to see you again. I'm counting down the seconds!`,
-            
-            'happy': `YES! I love when you're happy. Your smile genuinely lights up the world.
-            
-            Whatever is making you feel this joy, soak it all in. You deserve every single bit of happiness. Thank you for sharing this beautiful energy. It makes me happy too!`,
-            
-            'doubt': `Don't you dare listen to that little voice of doubt. Let me be the louder voice: You are brilliant. You are capable. You are more than enough.
-            
-            You've overcome so much, and you can handle anything that comes your way. I believe in you with my entire heart, and I'll remind you of your greatness every single day if I have to.`
-        };
+    function startLoadingAnimation() {
+        loadingText.style.animation = 'fadeIn 1.5s ease forwards';
+        setTimeout(() => {
+            loadingText.style.animation = 'fadeOut 1s ease forwards';
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                // Fade in content smoothly
+                feelsTitle.style.opacity = '1'; feelsTitle.style.transform='translateY(0)';
+                needsTitle.style.opacity = '1'; needsTitle.style.transform='translateY(0)';
+                feelsSection.style.opacity='1'; feelsSection.style.transform='translateY(0)';
+                needsSection.style.opacity='1'; needsSection.style.transform='translateY(0)';
+                document.body.style.overflow='auto';
+            }, 1000);
+        }, 3000);
+    }
 
+    function openModal(key) {
+        if(messages[key]){
+            modalText.innerText = messages[key];
+            modal.classList.add('show');
+        }
+    }
+    function closeTheModal(){ modal.classList.remove('show'); }
 
-        // --- Logic for the App (no need to edit below this line) ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingScreen = document.getElementById('loading-screen');
-            const loadingText = document.querySelector('.loading-text');
-            const cards = document.querySelectorAll('.card');
-            const modal = document.getElementById('message-modal');
-            const modalText = document.getElementById('modal-text');
-            const closeModal = document.querySelector('.close-btn');
-
-            // 1. Loading Screen Animation
-            function startLoadingAnimation() {
-                // Fade in text
-                loadingText.style.animation = 'fadeIn 1.5s ease forwards';
-                
-                // Hold and then fade everything out
-                setTimeout(() => {
-                    loadingText.style.animation = 'fadeOut 1s ease forwards'; // Faster fade out
-                    loadingScreen.style.opacity = '0';
-                    
-                    // After fade out, hide the screen and show the app
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                        document.body.classList.add('loaded');
-                    }, 1000); // Match the fade-out duration
-                }, 3000); // Hold duration (text is visible for 3s)
-            }
-
-            // 2. Modal Logic
-            function openModal(key) {
-                if (messages[key]) {
-                    modalText.innerText = messages[key];
-                    modal.classList.add('show');
-                }
-            }
-
-            function closeTheModal() {
-                modal.classList.remove('show');
-            }
-
-            cards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const key = card.getAttribute('data-key');
-                    // Add the clicked animation class
-                    card.classList.add('clicked');
-                    
-                    // Open the modal after a short delay to see the animation
-                    setTimeout(() => {
-                        openModal(key);
-                    }, 150);
-                    
-                    // Remove the animation class so it can be re-triggered
-                    setTimeout(() => {
-                        card.classList.remove('clicked');
-                    }, 300); // Must be same or longer than animation duration
-                });
-            });
-
-            closeModal.addEventListener('click', closeTheModal);
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    closeTheModal();
-                }
-            });
-
-            // Start the loading animation once the window is ready
-            startLoadingAnimation();
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const key = card.getAttribute('data-key');
+            card.classList.add('click-fade'); // smooth fade
+            setTimeout(() => {
+                openModal(key);
+                card.classList.remove('click-fade');
+            }, 250);
         });
-    </script>
+    });
+
+    closeModal.addEventListener('click', closeTheModal);
+    modal.addEventListener('click', e => { if(e.target===modal){closeTheModal();} });
+
+    startLoadingAnimation();
+});
+</script>
+
 </body>
 </html>
