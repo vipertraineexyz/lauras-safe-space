@@ -15,6 +15,15 @@ body {
     background: linear-gradient(135deg, #797577, #e0c8dd, #c8b9da);
     color: #333;
     overflow: hidden;
+    position: relative;
+}
+
+/* --- 1b. Animated Background Canvas --- */
+#bg-canvas {
+    position: fixed;
+    top:0; left:0;
+    width:100vw; height:100vh;
+    z-index:0;
 }
 
 /* --- 2. Loading Screen Styles --- */
@@ -65,39 +74,33 @@ h1.section-title {
     border:1px solid rgba(255,255,255,0.25);
     width:280px; padding:25px;
     cursor:pointer; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.5s ease, box-shadow 0.5s ease, opacity 0.5s ease;
+    position: relative;
+    z-index:1;
 }
-.card h2 {
-    font-family: 'Playfair Display', serif;
-    font-size:1.8rem;
-    color:#4a4a68;
-}
+.card h2 { font-family: 'Playfair Display', serif; font-size:1.8rem; color:#4a4a68; }
 .card:hover { transform: translateY(-5px) scale(1.02); box-shadow:0 8px 20px rgba(100,100,135,0.25); }
-
-/* --- Smooth Click Animation --- */
-.card.click-fade {
-    opacity:0;
-    transform: scale(0.95);
-}
 
 /* --- 6. Modal Styles --- */
 .modal {
-    position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%;
-    background-color: rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s ease;
+    position:fixed; z-index:1001; left:0; top:0; width:100%; height:100%;
+    background-color: rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.4s ease;
 }
 .modal.show { display:flex; opacity:1; }
 .modal-content {
     background:#fff; padding:40px; border-radius:15px;
     max-width:600px; width:90%; max-height:80vh; overflow-y:auto;
-    position:relative; transform:scale(0.95); transition:transform 0.3s ease;
+    position:relative; transform:scale(0.95); transition:transform 0.4s ease, opacity 0.4s ease; opacity:0;
 }
-.modal.show .modal-content { transform:scale(1); }
+.modal.show .modal-content { transform:scale(1); opacity:1; }
 .modal-content p { font-size:1.1rem; line-height:1.8; white-space:pre-wrap; }
 .close-btn { position:absolute; top:15px; right:20px; color:#aaa; font-size:30px; font-weight:bold; cursor:pointer; transition:color 0.2s ease; }
 .close-btn:hover { color:#333; }
 </style>
 </head>
 <body>
+
+<canvas id="bg-canvas"></canvas>
 
 <div id="loading-screen">
     <div class="loading-text">Your safe space</div>
@@ -111,7 +114,6 @@ h1.section-title {
     <div class="card" data-key="doubt"><h2>Read when you doubt yourself</h2></div>
     <div class="card" data-key="depressed"><h2>Read when you're feeling depressed</h2></div>
     <div class="card" data-key="crying"><h2>Read when you're crying</h2></div>
-    <div class="card" data-key="insecure"><h2>Read when you're feeling insecure</h2></div>
     <div class="card" data-key="lonely"><h2>Read when you're feeling lonely</h2></div>
     <div class="card" data-key="horny"><h2>Read when you're feeling horny</h2></div>
     <div class="card" data-key="mad"><h2>Read when you're feeling mad</h2></div>
@@ -138,22 +140,77 @@ h1.section-title {
 </div>
 
 <script>
+// --- Floating particle background ---
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+
+const particles = [];
+const particleCount = 80;
+
+for(let i=0;i<particleCount;i++){
+    particles.push({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        r: Math.random()*3+1,
+        dx: (Math.random()-0.5)*0.5,
+        dy: (Math.random()-0.5)*0.5,
+        alpha: Math.random()*0.5+0.3
+    });
+}
+
+function animateParticles(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+        p.x += p.dx;
+        p.y += p.dy;
+        if(p.x<0 || p.x>w) p.dx *= -1;
+        if(p.y<0 || p.y>h) p.dy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+        ctx.fill();
+    });
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+window.addEventListener('resize', ()=>{
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+});
+</script>
+
+<script>
 const messages = {
-    'sad': "Hey 💀 Feeling sad? Remember it's okay to feel. Take a deep breath and let it out.",
-    'miss-me': "Are you missing me 💀? I miss you too. Let's talk soon.",
-    'happy': "Yay 💀! Happiness suits you. Keep smiling!",
-    'doubt': "Don't listen to that little voice 💀. You are stronger than you think.",
-    'depressed': "It's okay 💀. Take it one small step at a time, I'm here with you.",
-    'crying': "Let it out 💀. Tears are just emotions leaving your body.",
-    'insecure': "You are amazing 💀. Remember your worth and embrace yourself.",
-    'lonely': "You are not alone 💀. Even when alone, you are loved.",
-    'horny': "Time to take care of yourself 💀... responsibly 😉",
-    'mad': "Take a breath 💀. Let the anger out safely, then reset.",
-    'stressed': "Relax 💀. One step at a time, you’ve got this.",
-    'need-reassurance': "You are enough 💀. I believe in you.",
-    'need-motivation': "Keep going 💀. You are unstoppable.",
-    'need-laugh': "Here’s a laugh for you 💀: Why did the skeleton go to the party alone? Because he had no body to go with!",
-    'need-sleep': "Rest 💀. Sleep is your superpower, recharge yourself.",
+    'sad': `HEY MY HUNNY BUNNY! WHATS UP? DAVID BEING A NUISANCE? LIFE NOT GOING WELL? ITS OKAY BECAUSE AM HERE!
+    <br>
+    okay seriously, if something is making you sad you should really talk about it honey, if not it's okay js remember that its temporary i don't want you to feel sad because it does hurt seeing you like this so know this babe, this feeling is temporary and will go away in due time you can always talk to me am here your safe space your lover your future husband, am here for you always. <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> `,
+
+    'miss-me': 'HIII BABBYYYY! MISSED ME? AWWW UR SO CUTE I LOVE YOU SM!!! I MISSED YOU TOO! REACH OUT TO ME AT ANY TIME IN THE MORNING IN THE EVENING LATE AT NIGHT WHEN I SLEEP WHEN AM PASSING EXAMS IT DOESNT MATTER I NEVER WANNA IGNORE YOU IF I DONT RESPOND JS KNOW THAT M REALLY BUSY THAT I COULDNT HOLD MY PHONE OKAY? I NEVER IGNORE YOU THE OTHER WAY AROUND ACTUALLY I STALK THE SHIT OUT OF YOU AND PERMA WANNA TALK TO YOU SO TALK TO ME OKAY? EVEN IF WEVE JS FOUGHT EVEN IF WE DISAGREED ON STUFF I LOVE YOU MWAAAAAH!! <3 <3 <br> okay seriously now... if you feel lonely and theres noway to acc talk to me, js know youre always in my heart and am always thinking about you and how youre doing and what youre doing if youve eaten lunch if youve drunk water if youve slept well, i always think about you and your well being so yea i perma miss you too... even if its a couple of mins... i love you sm hubby okay? mwaaah! take care now! make sure to dm me! <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> ',
+
+    'happy': 'YES! YES! YES! YOU SHOULD, you should always be happy my sweet baby, i love that smile of yours, makes you prettier, gosh i wish you could see it urself u look cute when you smile i love your eyes your smile your face... it js fits yk? i js wish i can be the reason why ur always smiling and happy in life because you do deserve so laugh and smile feel good as much as you can baby, because you do deseve it, you deserve to be happy! and i wish you the best of the best in everything! MWAH! MWAH MWAH MWAAAAAH!',
+    
+    'doubt': 'hi my sweet baby, well you should not be here because i dont think theres something that you should be doubting yourself about... youre perfect to me, your eyes your faces your hair your body (i absolute adore it btw) youre smart youre intelligent and most importantly, youre putting in a lot of effort into this... and i truly cherish that most than everything... because this is so special to me, it makes me feel special, loved, cared for by you and you only... you truly made me happy and am forever grateful for that <3 <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> ',
+
+    'depressed': 'HII MY SWEETTT BABBYYY! i know things might feel heavy right now, and its okay to feel this way. just remember, youre not alone in this. im here for you, always ready to listen and support you. take your time to heal, and dont hesitate to reach out when you need someone to talk to, afterall ure loved, and you matter to me barsha barsha... i love u sm hun <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> </br>PS: BARSHA = SO MUCH',
+    
+    'crying': 'hi my sweet hubby, ik things might be a bit too much rn but listen to me, its okay to cry now and let it all out but remember that am here for you and m never gonna leave you ill be here by urside in your lowest moments need a shoulder to cry on? thats me but while you do so, please take care of yourself cuz ik when its too much its hard to focus on yourself so heres a reminder, drink your water eat your food and dont u dare turn to drugs/pills... that will not help, ill be sad if you do something like that again... know that its selfish because there are other people who care about you deeply. </br> i love you my hunny bunny <3 <3 <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;">',
+    
+    'lonely': 'hi my sweet girl, ik how this feels and how uncomfy it sometimes gets but know that m here for you, the good the bad, everything... am here with you m never gonna leave u always by your side, so dm me, call me, disturb me youre always welcome my love i enjoy ur company more than you realize, its everything for me these days and will be in the future... dont ever think ur a nuisance or a burden, i want you to be here w me 24/7 when am awake, when am asleep so hmu, anytime, ill be there for you... i love you... MWAH MWAHHM MWAAAAAHHHHH!',
+
+    'horny': 'hiii my good girl, wanna fuck? oh i wish i could do that honestly, id push you against the wall lock both your arms as i push it deeper and deeper inside you... i wanna be inside you so bad baby, you turn me on a lot... think of all the possiblities when were tg, i js wanna mark you and make you mine already... ur so hot, u js dont see it... i wanna put you under my desk as it goes deeper and deeper in ur mouth, hopefully... 2 years from now, one apartment, us, evernight...',
+    
+    'mad': 'Ookay okay, baby listen, things can get out of hand sometimes and you get mad, and this is normal, it is a normal reaction but listen to me... being angry or mad at something/someone is okay but staying mad is not, it will affect your health significantly... you might not see it but think about it, why would i be mad about something that has happened in which ik thats gonna hurt me in the future? okay sure if you dont wanna fix that but what about me? that would be selfish no? id get sad and concerned about you, i want you to always be happy and healthy, it would make me sad seeing you like that am sure yk how this feels when you make someone you care about feel sad and shit but yeah, trust me honey, its not worth it... it will pass... i promise you...',
+    
+    'stressed': 'babe, calm down... i need you to calm down and breath slowly okay? now listen to me, everythings gonna be fine okay? am here with you, m not gonna leave u out here i will try my best to help you... always remembe that m here for you and know this, ur good, ur good enough baby... whatever it is everything is gonna be fine because ik u will be fine, u are strong, ur a survivor, thats who u are, even when i met you thats the vibe you gave me someone that went through a lot and still made it, if you dont believe in urself then you should think twice... because i bet on you, i believe in you and ik ur gonna make it be it work, school, whatever it is, ur gonna be alright and ur gonna make it... so have confidence because you truly are someone wonderful and amazing... youre smart, intelligent, skilled... ur not a random ur an amazing person and youre good enough, youre good baby... i love you sm my hunny bunny... mwah MWAH MWAAAAH MWAAAAAH <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;">',
+
+    'need-reassurance': 'You are enough 💀. I believe in you.',
+    'need-motivation': 'Keep going 💀. You are unstoppable.',
+    'need-laugh': 'Here’s a laugh for you 💀: Why did the skeleton go to the party alone? Because he had no body to go with!',
+    'need-sleep': 'Rest 💀. Sleep is your superpower, recharge yourself.',
     'need-cum': "Take a moment 💀. Pleasure is normal, just be mindful.",
     'need-hug': "Virtual hug 💀 🤗 Sending warmth your way.",
     'need-smile': "Smile 💀! It's contagious, even if just in your mind.",
@@ -179,37 +236,41 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
-                // Fade in content smoothly
                 feelsTitle.style.opacity = '1'; feelsTitle.style.transform='translateY(0)';
                 needsTitle.style.opacity = '1'; needsTitle.style.transform='translateY(0)';
                 feelsSection.style.opacity='1'; feelsSection.style.transform='translateY(0)';
                 needsSection.style.opacity='1'; needsSection.style.transform='translateY(0)';
                 document.body.style.overflow='auto';
-            }, 1000);
-        }, 3000);
+            },1000);
+        },3000);
     }
 
-    function openModal(key) {
+    function openModal(key){
         if(messages[key]){
-            modalText.innerText = messages[key];
+            modalText.innerHTML = messages[key];
             modal.classList.add('show');
         }
     }
-    function closeTheModal(){ modal.classList.remove('show'); }
+    function closeTheModal(){
+        modal.classList.remove('show');
+    }
 
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
+    cards.forEach(card=>{
+        card.addEventListener('click', ()=>{
             const key = card.getAttribute('data-key');
-            card.classList.add('click-fade'); // smooth fade
-            setTimeout(() => {
-                openModal(key);
-                card.classList.remove('click-fade');
-            }, 250);
+            openModal(key); // just open modal, no card animation
         });
     });
 
-    closeModal.addEventListener('click', closeTheModal);
-    modal.addEventListener('click', e => { if(e.target===modal){closeTheModal();} });
+    closeModal.addEventListener('click', ()=>{
+        closeTheModal();
+    });
+
+    modal.addEventListener('click', e=>{
+        if(e.target===modal){
+            closeTheModal();
+        }
+    });
 
     startLoadingAnimation();
 });
