@@ -96,9 +96,50 @@ h1.section-title {
 .modal-content p { font-size:1.1rem; line-height:1.8; white-space:pre-wrap; }
 .close-btn { position:absolute; top:15px; right:20px; color:#aaa; font-size:30px; font-weight:bold; cursor:pointer; transition:color 0.2s ease; }
 .close-btn:hover { color:#333; }
+
+/* --- 7. Audio Button Styles --- */
+#play-pause-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #4a4a68;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+#play-pause-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.8);
+}
+#play-pause-btn svg {
+    margin-left: 3px; 
+}
+#play-pause-btn #pause-icon {
+    margin-left: 0;
+}
 </style>
 </head>
 <body>
+
+<button id="play-pause-btn">
+    <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px">
+        <path d="M8 5v14l11-7z"/>
+    </svg>
+    <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28px" height="28px" style="display: none;">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+    </svg>
+</button>
 
 <canvas id="bg-canvas"></canvas>
 
@@ -160,17 +201,33 @@ for(let i=0;i<particleCount;i++){
     });
 }
 
+// UPDATED to use bass, mids, and treble for different effects
 function animateParticles(){
+    // Get the separate frequency data from the other script
+    let bass = window.bassAverage || 0;
+    let mids = window.midAverage || 0;
+    let treble = window.trebleAverage || 0;
+
+    // Create multipliers for different visual properties
+    let sizeMultiplier = 1 + (bass / 255) * 6;      // Bass makes particles BIGGER
+    let speedMultiplier = 1 + (mids / 255) * 1.5;   // Mids make particles FASTER
+    let alphaMultiplier = 0.3 + (treble / 255) * 0.6; // Treble makes particles BRIGHTER
+
     ctx.clearRect(0,0,w,h);
     particles.forEach(p=>{
-        p.x += p.dx;
-        p.y += p.dy;
-        if(p.x<0 || p.x>w) p.dx *= -1;
-        if(p.y<0 || p.y>h) p.dy *= -1;
+        // Apply speed multiplier to particle movement
+        p.x += p.dx * speedMultiplier;
+        p.y += p.dy * speedMultiplier;
+
+        if(p.x < 0 || p.x > w) p.dx *= -1;
+        if(p.y < 0 || p.y > h) p.dy *= -1;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+        // Use the sizeMultiplier to make particles react to the bass
+        ctx.arc(p.x, p.y, p.r * sizeMultiplier, 0, Math.PI*2);
+        
+        // Use the alphaMultiplier to make particles brighter with the treble
+        ctx.fillStyle = `rgba(255,255,255,${p.alpha * alphaMultiplier})`;
         ctx.fill();
     });
     requestAnimationFrame(animateParticles);
@@ -188,39 +245,22 @@ const messages = {
     'sad': `HEY MY HUNNY BUNNY! WHATS UP? DAVID BEING A NUISANCE? LIFE NOT GOING WELL? ITS OKAY BECAUSE AM HERE!
     <br>
     okay seriously, if something is making you sad you should really talk about it honey, if not it's okay js remember that its temporary i don't want you to feel sad because it does hurt seeing you like this so know this babe, this feeling is temporary and will go away in due time you can always talk to me am here your safe space your lover your future husband, am here for you always. <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> `,
-
     'miss-me': 'HIII BABBYYYY! MISSED ME? AWWW UR SO CUTE I LOVE YOU SM!!! I MISSED YOU TOO! REACH OUT TO ME AT ANY TIME IN THE MORNING IN THE EVENING LATE AT NIGHT WHEN I SLEEP WHEN AM PASSING EXAMS IT DOESNT MATTER I NEVER WANNA IGNORE YOU IF I DONT RESPOND JS KNOW THAT M REALLY BUSY THAT I COULDNT HOLD MY PHONE OKAY? I NEVER IGNORE YOU THE OTHER WAY AROUND ACTUALLY I STALK THE SHIT OUT OF YOU AND PERMA WANNA TALK TO YOU SO TALK TO ME OKAY? EVEN IF WEVE JS FOUGHT EVEN IF WE DISAGREED ON STUFF I LOVE YOU MWAAAAAH!! <3 <3 <br> okay seriously now... if you feel lonely and theres noway to acc talk to me, js know youre always in my heart and am always thinking about you and how youre doing and what youre doing if youve eaten lunch if youve drunk water if youve slept well, i always think about you and your well being so yea i perma miss you too... even if its a couple of mins... i love you sm hubby okay? mwaaah! take care now! make sure to dm me! <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> ',
-
     'happy': 'YES! YES! YES! YOU SHOULD, you should always be happy my sweet baby, i love that smile of yours, makes you prettier, gosh i wish you could see it urself u look cute when you smile i love your eyes your smile your face... it js fits yk? i js wish i can be the reason why ur always smiling and happy in life because you do deserve so laugh and smile feel good as much as you can baby, because you do deseve it, you deserve to be happy! and i wish you the best of the best in everything! MWAH! MWAH MWAH MWAAAAAH!',
-    
     'doubt': 'hi my sweet baby, well you should not be here because i dont think theres something that you should be doubting yourself about... youre perfect to me, your eyes your faces your hair your body (i absolute adore it btw) youre smart youre intelligent and most importantly, youre putting in a lot of effort into this... and i truly cherish that most than everything... because this is so special to me, it makes me feel special, loved, cared for by you and you only... you truly made me happy and am forever grateful for that <3 <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> ',
-
     'depressed': 'HII MY SWEETTT BABBYYY! i know things might feel heavy right now, and its okay to feel this way. just remember, youre not alone in this. im here for you, always ready to listen and support you. take your time to heal, and dont hesitate to reach out when you need someone to talk to, afterall ure loved, and you matter to me barsha barsha... i love u sm hun <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;"> </br>PS: BARSHA = SO MUCH',
-    
     'crying': 'hi my sweet hubby, ik things might be a bit too much rn but listen to me, its okay to cry now and let it all out but remember that am here for you and m never gonna leave you ill be here by urside in your lowest moments need a shoulder to cry on? thats me but while you do so, please take care of yourself cuz ik when its too much its hard to focus on yourself so heres a reminder, drink your water eat your food and dont u dare turn to drugs/pills... that will not help, ill be sad if you do something like that again... know that its selfish because there are other people who care about you deeply. </br> i love you my hunny bunny <3 <3 <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;">',
-    
     'lonely': 'hi my sweet girl, ik how this feels and how uncomfy it sometimes gets but know that m here for you, the good the bad, everything... am here with you m never gonna leave u always by your side, so dm me, call me, disturb me youre always welcome my love i enjoy ur company more than you realize, its everything for me these days and will be in the future... dont ever think ur a nuisance or a burden, i want you to be here w me 24/7 when am awake, when am asleep so hmu, anytime, ill be there for you... i love you... MWAH MWAHHM MWAAAAAHHHHH!',
-
     'horny': 'hiii my good girl, wanna fuck? oh i wish i could do that honestly, id push you against the wall lock both your arms as i push it deeper and deeper inside you... i wanna be inside you so bad baby, you turn me on a lot... think of all the possiblities when were tg, i js wanna mark you and make you mine already... ur so hot, u js dont see it... i wanna put you under my desk as it goes deeper and deeper in ur mouth, hopefully... 2 years from now, one apartment, us, evernight...',
-    
     'mad': 'Ookay okay, baby listen, things can get out of hand sometimes and you get mad, and this is normal, it is a normal reaction but listen to me... being angry or mad at something/someone is okay but staying mad is not, it will affect your health significantly... you might not see it but think about it, why would i be mad about something that has happened in which ik thats gonna hurt me in the future? okay sure if you dont wanna fix that but what about me? that would be selfish no? id get sad and concerned about you, i want you to always be happy and healthy, it would make me sad seeing you like that am sure yk how this feels when you make someone you care about feel sad and shit but yeah, trust me honey, its not worth it... it will pass... i promise you...',
-    
     'stressed': 'babe, calm down... i need you to calm down and breath slowly okay? now listen to me, everythings gonna be fine okay? am here with you, m not gonna leave u out here i will try my best to help you... always remembe that m here for you and know this, ur good, ur good enough baby... whatever it is everything is gonna be fine because ik u will be fine, u are strong, ur a survivor, thats who u are, even when i met you thats the vibe you gave me someone that went through a lot and still made it, if you dont believe in urself then you should think twice... because i bet on you, i believe in you and ik ur gonna make it be it work, school, whatever it is, ur gonna be alright and ur gonna make it... so have confidence because you truly are someone wonderful and amazing... youre smart, intelligent, skilled... ur not a random ur an amazing person and youre good enough, youre good baby... i love you sm my hunny bunny... mwah MWAH MWAAAAH MWAAAAAH <img src="resources/1395822397126606939.png" alt="emoji" style="width:24px;height:24px;">',
-
     'need-reassurance': 'hi my sweet hubby! i js wanted to tell you that you are good enough for me, youre pretty smart intelligent and most importantly caring, and i really love this about you, you really cared for me and i felt loved and cared for first time by someone... you might be feeling down now like youre still not good enough that you dont deserve me, but thats really wrong baby... you are more than enough and you matter to me a lot i feel hurt everytime i see you sad like this, it shatters my heart and i cant put it into words, i sometimes feel sick in my stomach, never wanted to say this before, but here you go now you know how i feel about it everytime i see you like this... please baby listen, you are perfect for me... i love you the way you are, dont chance anything you are perfect, js perfect... if this feeling ever comes back js know that i love you and i want you so bad... nhebbek...',
-    
     'need-motivation': 'hii baby!! whatever it is youre trying to do rn, i believe that you can do it... because in these 4 months ive gotten closer to you and ive gotten to know you better and now i see it, i see what youre capable of, i truly believe ur an amazing person and youre someone that will have a great future lying ahead of you, ur smart... so smart too, and ik that you will make it and you everything is gonna be alright, so chin up and get things done, i believe in you <3.',
-    
     'need-laugh': 'hi my name is laura i live in belgoim and i love my ferrets, remember how everytime i fall for your ragebait? like yea Kappa, ur a total ragebaiter and i acc love that about you a lot... ur so silly, diabetes type 2? yea *types 2*, oh btw remember this? "do you want me to peg you?" -Laura</br>"Maybe" -Ahmed </br> "Do you even know what pegging is?" -Laura </br> "Tell me about it" -Ahmed </br> "It"s when i wear a strap and fuck you" -Laura </br> "Maybe" -Ahmed',
-    
     'need-sleep': 'hii my hubby... this will be a quickie, js imagine me near you, sleeping on the same bed as you are... reading you a story (remember that time when i read u a bedtime story? welp i think it was horrible)... caressing ur cheeks as you close ur eyes and breath slowly... id admire you as you sleep... all night... goodsleep my hunny bunny... i love you <3',
-    
     'need-cum': 'hi my good girl, do you ever think of us tg after 2 years from now? same apartment? js us? nothing to care about in the whole world? yes... getting home from work, all tire and exhausted... id start kissing you and kissing your neck slowly, ill hold you in my arms... as i whisper in your ears... "My good girl"... think of all the possiblities babe, if theres someone whom i wanna do this thing with so bad, its you and you only... i want you so bad...',
-    
     'need-hug': 'HIII MY SWEET BABY! WHATS UP? YOU OKAY? cmere my sweet baby... MWAH! Heres a virtual hug since i cant be there with you rn... its sad tho, but we have to accept reality... js wish i could there with you, id hold you in my arms for hours, as we cuddle and kiss... id nuzzle up against you... look into your eyes as i tell you how much i love you and how far id go for us to be tg... i adore you my sweet hunny bunny... forever and ever <3 <3',
-    
     'need-smile': 'hii my sweet girl, i js want you to know that i love you sm, i really adore you so freakin much... even if were not tg rn, your light shines bright on me in the darkness of it all, the cruelty of this world, you made me happy, loved, cared for, satisfied... you even gave me purpose to lock in and get my ass to work asap so i can get to europe... so i can be w u, so i can feel you and kiss you and hug you... so i dont need to open discord and and js talk over mic, js to finally see you with my own eyes... no screens in between... nothing... i want you to know that you matter to me a lot and i really wish you the best in everything you stumble upon... and again, i love you sm... more than words could ever describe...',
-    
     'need-encouragement': 'heyyy my sweet girl, you prob are feeling a lil bit under the weather, but hey look... you got ur number 1 fan right here, cheering you on in the most diff moments because i believe in you! you can do it baby, i truly believe in you, ur smart and hardworking, ur loving, ur caring... you have a strong will at your age and am very proud of how far youve come through all these tough moments in life! you can do it! i believe in you! i love you!!! <3 <3 <3'
 };
 
@@ -235,6 +275,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const needsTitle = document.getElementById('needs-title');
     const feelsSection = document.getElementById('feels-section');
     const needsSection = document.getElementById('needs-section');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+
+    let audioContext;
+    let analyser;
+    const audio = new Audio('resources/audio.m4a');
+    audio.crossOrigin = "anonymous";
+    let isPlaying = false;
+
+    // UPDATED to analyze bass, mids, and treble
+    function setupAudio() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaElementSource(audio);
+            
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount; // 128
+            const dataArray = new Uint8Array(bufferLength);
+
+            function getAudioData() {
+                analyser.getByteFrequencyData(dataArray);
+                
+                let bassSlice = dataArray.slice(0, 20);
+                let bassAverage = bassSlice.reduce((a, b) => a + b, 0) / bassSlice.length;
+
+                let midSlice = dataArray.slice(20, 80);
+                let midAverage = midSlice.reduce((a, b) => a + b, 0) / midSlice.length;
+                
+                let trebleSlice = dataArray.slice(80, bufferLength);
+                let trebleAverage = trebleSlice.reduce((a, b) => a + b, 0) / trebleSlice.length;
+
+                window.bassAverage = bassAverage || 0;
+                window.midAverage = midAverage || 0;
+                window.trebleAverage = trebleAverage || 0;
+
+                requestAnimationFrame(getAudioData);
+            }
+            getAudioData();
+        }
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+        if (!audioContext) {
+            setupAudio();
+        }
+        
+        if (isPlaying) {
+            audio.pause();
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        } else {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            audio.play();
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+        }
+        isPlaying = !isPlaying;
+    });
+
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+    });
 
     function startLoadingAnimation() {
         loadingText.style.animation = 'fadeIn 1.5s ease forwards';
@@ -265,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cards.forEach(card=>{
         card.addEventListener('click', ()=>{
             const key = card.getAttribute('data-key');
-            openModal(key); // just open modal, no card animation
+            openModal(key);
         });
     });
 
